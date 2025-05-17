@@ -1,0 +1,36 @@
+version: "2.35.1"
+
+services:
+  pg_service :
+    image: postgres:alpine
+    container_name: pg1
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 1
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  bot:
+    build: .
+    image: kwork_bot:latest
+    container_name: kwork_bot_container
+    restart: always
+    command: python main.py
+    depends_on:
+      - pg_service
+
+  web:
+    build: .
+    image: kwork_web:latest
+    container_name: kwork_web_container
+    restart: always
+    command: uvicorn admin:app --host 0.0.0.0
+    depends_on:
+      - pg_service
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:
